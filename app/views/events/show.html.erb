@@ -1,0 +1,394 @@
+<% content_for :nav do %>
+  <%= render 'layouts/nav' %>
+<% end %>
+
+<style>
+    body {
+    
+      //background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://www.teahub.io/photos/full/197-1977791_portland-wallpapers-hd-portland-oregon-city-view.jpg);
+      background-repeat: no-repeat; 
+      background-position: center;
+      background-attachment: fixed; 
+      webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      height:100%;
+      width:100%; 
+      
+    }
+
+    section{
+      padding: 40px;
+      padding-bottom: 100vh;
+      background-color: white;
+    }
+
+  h3{
+  text-align: center;
+  }
+
+  #referral-button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    padding: 20px;
+    font-size: 20px;
+    text-decoration: none;
+    color: white;
+    background-color: black;
+  }
+
+  .level-contents-toggle{
+    text-align: center;
+  }
+
+  #referral-contents-toggle{
+    display: none; 
+    text-align: center; 
+    padding-top: 10px; 
+    padding-bottom: 20px; 
+    background-color: #e6ccff;
+    color: black; 
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  #guest-list-table{
+    display: none;
+  }
+  table, th, td {
+    border: 1px solid black;
+  }
+  th, td {
+    padding: 5px;
+    #width: 209.8px;
+  }
+
+  th.value input{
+    width: 100%
+  }
+</style>
+
+<script>
+/JS toggles RSVP Form visibility
+  function toggle_referral() {
+  var button_name = document.getElementById("referral-prepper");
+  var x = document.getElementById("referral-contents-toggle");
+  if (button_name.innerHTML == "Open Referral Reward Template") {
+    button_name.innerHTML = "Close Referral Reward Template";
+    x.style.display = "block";
+  } else {
+    button_name.innerHTML = "Open Referral Reward Template";
+    button_name.style.background = "lightgreen";
+    x.style.display = "none";
+  }
+}/
+
+  function guest_table_toggle() {
+    var button_name = document.getElementById("guest-list-table-toggle");
+    var x = document.getElementById("guest-list-table");
+    if(button_name.innerHTML == "Guest-List Table") {
+      button_name.innerHTML = "Close Guest-List Table";
+      x.style.display = "block";
+    } else {
+      button_name.innerHTML = "Guest-List Table";
+      x.style.display = "none";
+    }
+  }
+
+  function referral_table_toggle() {
+    var button_name = document.getElementById("referral-table-toggle");
+    var x = document.getElementById("referral-table");
+    if(button_name.innerHTML == "Referral Table") {
+      button_name.innerHTML = "Close Referral Table";
+      x.style.display = "block";
+    } else {
+      button_name.innerHTML = "Referral Table";
+      x.style.display = "none";
+    }
+  }
+
+  function seating_table_toggle() {
+  var button_name = document.getElementById("seating-table-toggle");
+  var x = document.getElementById("seating-table");
+  if(button_name.innerHTML == "Seating Levels") {
+    button_name.innerHTML = "Close Seating Levels";
+    x.style.display = "block";
+  } else {
+    button_name.innerHTML = "Seating Levels";
+    x.style.display = "none";
+  }
+}
+
+function refresh() {
+  // or $('#myform')[0] with jQuery
+  $("#reward-msg").load(location.href + " #reward-msg");
+  
+}
+</script>
+
+<h1><%= @event.title %></h1>
+<div id='event-summary' class='mb-4'>
+  <div class='d-flex justify-content-start'>
+    <% if @event.image.attached? %>
+    <img class='w-25 me-2' src='<%= url_for(@event.image) %>' alt='Event image'>
+    <% end %>
+
+    <div>
+      <p>Event Date: <%=@event.datetime %></p> <!-- format this to look nicer -->
+      <p>Address: <%=@event.address %></p> <!-- <p><b>Event Address: 1255 NW 9th Ave, Portland, OR 97209</b></p> Example of what addr should look like--> 
+      <p>Description: <%=@event.description %></p>
+    </div>
+
+    <div data-controller='update dynamic' data-update-url-value='/api/v1/events' data-action='update:updated->dynamic#reload'>
+      <%= render 'form' %>
+    </div>
+  </div>
+  <div class='d-flex mt-2'>
+    <button class='btn btn-primary me-2' data-bs-toggle="modal" data-bs-target="#event-modal">Edit Event</button>
+    <%= button_to "Delete Event", @event, :method => :delete, data: {confirm: "Are you sure you want to delete this event?"}, class: 'btn btn-danger' %>
+  </div>
+</div>
+
+<script>
+var eventModal = document.getElementById('event-modal')
+var updateButton = eventModal.querySelector('button[type="submit"]')
+eventModal.addEventListener('show.bs.modal', function (event) {
+  var button = event.relatedTarget
+  eventModal.querySelector('.modal-title').textContent = "Update Event"
+  eventModal.querySelector('button[type="submit"]').textContent = "Update"
+  eventModal.querySelector('input[data-nxt-id]').setAttribute('data-nxt-id', "<%= @event.id %>")
+  eventModal.querySelector('input[data-nxt-id]').value = "<%= @event.id %>"
+  eventModal.querySelector('#event-name').value = "<%= @event.title %>"
+  eventModal.querySelector('#event-address').value = "<%= @event.address %>"
+  eventModal.querySelector('#event-description').value = "<%= @event.description %>"
+  eventModal.querySelector('#event-datetime').value = (new Date("<%= @event.datetime.to_fs(:iso8601) %>")).toISOString().slice(0,16)
+  eventModal.querySelector('#event-boxoffice').value = "<%= @event.box_office %>"
+})
+</script>
+
+<h2>Manage Seating Levels</h2>
+<div class="divTable paleBlueRows">
+  <div class="divTableHeading">
+    <div class="divTableRow">
+      <div class="divTableHead">Category</div>
+      <div class="divTableHead">Total Count</div>
+      <div class="divTableHead">Actions</div>
+    </div>
+  </div>
+  
+  <div class="divTableBody" >
+    <% @seats.each do |seat| %>
+      <%= content_tag :div, class: 'divTableRow', id: dom_id(seat) do %>
+        <%= render seat %>
+      <% end %>
+    <% end %>
+  </div>
+  <form id='form-seat' class="divTableBody" method="post" action="/events/<%= @event.id %>/seating_types">
+  <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+    <div class='divTableRow'>
+      <div class="divTableCell Add">
+        <input type="text" name="category">
+      </div>
+      <div class="divTableCell Add">
+        <input type="number" name="total_count">
+      </div>
+      <div class="divTableCell Add">
+        <button type="submit" value="submit" form='form-seat' class="btn btn-primary">+</button>
+      </div>
+    </div>
+  </form>
+</div> 
+<br>
+
+<h4> Box Office Seating </h4>
+<div id='boxoffice-seating' class='mb-4'>
+  <table class="center">
+    <tr>
+      <th width=199.8>Category</th>
+      <th width=199.8>Total Sold</th>
+    </tr>
+    <tbody>
+      <% @boxoffice_seats.each do |result| %>
+        </tr>
+          <th width=199.8><%= result.seat_section %></th>
+          <th width=199.8><%= result.booked_count %></th>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+      
+<h4> Seating Summary Information </h4>
+<div id='seating-summary' class='mb-4'>
+  <table class="center">
+    <tr>
+      <th width=199.8>Category</th>
+      <th width=199.8>VIP Guests</th>
+      <th width=199.8>Total Allotted</th>
+      <th width=199.8>Total Committed</th>
+      <th width=199.8>Total Sold</th>
+      <th width=199.8>Free Seats</th>
+      <th width=199.8>Tentative Free Seats (based on seats allotted to guests)</th>
+      
+     
+<!--       <th width=199.8>Balance</th> -->
+    </tr>
+    <tbody>
+      <% @res.each do |result| %>
+        <tr>
+          <th width=199.8><%= result.category %></th>
+          <th width=199.8><%= result.total_guests %></th>
+          <th width=199.8><%= result.total_allotted%></th>
+          <th width=199.8><%= result.total_committed %></th>
+          <th width=199.8><%= result.boxoffice_booked %></th>
+          <th width=199.8><%= result.remaining %></th>
+<!--           <th width=199.8><%= result.balance %></th> -->
+          <th width=199.8><%=  result.tentative_remaining %></th>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<!-- button to edit/add guests -->
+
+<h2>Manage Guests</h2>
+<div class='mb-4'>
+  <div class='d-flex justify-content-between'>
+    <div class='d-flex'>
+      <%= render 'email_template' %>
+      <span class='ms-2 me-2'></span>
+      <%= render 'email_modal' %>
+      <span class='ms-2 me-2'></span>
+      <%= render 'bulk_email' %>
+      <span class='ms-2 me-2'></span>
+      <%= render 'rsvp_expiry' %>
+    </div>
+    <div>
+      <a href='/api/v1/events/<%= @event_id %>/guests?download'><button class='btn btn-primary'>Export Guest List</button></a>
+    </div>
+  </div>
+  <%= render 'guest_list' %>
+</div>
+
+<h2>Manage Box Office Sales</h2>
+<div class='mb-2'>
+  <%= render 'bulk_referral_email' %>
+  <span class='ms-2 me-2'></span>
+  <%= render 'box_office_data' %>
+</div>
+
+<h2>Manage Referrals</h2>
+<%= render 'referral_table' %>
+
+<script>
+var emailModal = document.getElementById('email-modal')
+emailModal.addEventListener('show.bs.modal', function (event) {
+  var button = event.relatedTarget
+  var recipient = button.getAttribute('data-nxt-email')
+  var modalInput = emailModal.querySelector('#email-to')
+  modalInput.value = recipient
+})
+</script>
+
+<script>
+var bulkEmailModal = document.getElementById('bulk-email')
+    bulkEmailModal.addEventListener('show.bs.modal', function () {
+      var forms = document.querySelectorAll("[name=guest_display]");
+      var recipients = "";
+
+       for (var i=0, n=forms.length;i<n;i++) {
+        if (forms[i].elements['guest_selector'].checked) {
+          recipients += forms[i].elements['guest_email'].value+";"
+        }
+       }
+    var bulkModal = document.getElementById('bulk-email')
+    var modalInput = bulkModal.querySelector('#email-to')
+    modalInput.value = recipients
+    })
+</script>
+
+<script>
+var bulkEmailModal = document.getElementById('bulk-referral-email')
+    bulkEmailModal.addEventListener('show.bs.modal', function () {
+      var forms = document.querySelectorAll("[name=boxoffice_display]");
+      var recipients = "";
+
+       for (var i=0, n=forms.length;i<n;i++) {
+        if (forms[i].elements['boxoffice_selector'].checked) {
+          recipients += forms[i].elements['boxoffice_email'].value+";"
+        }
+       }
+    var bulkModal = document.getElementById('bulk-referral-email')
+    var modalInput = bulkModal.querySelector('#email-to')
+    modalInput.value = recipients
+    })
+</script>
+
+<script>
+var setExpiryModal = document.getElementById('invite-expiry')
+    setExpiryModal.addEventListener('show.bs.modal', function () {
+      var forms = document.querySelectorAll("[name=guest_display]");
+      var recipients = "";
+
+       for (var i=0, n=forms.length;i<n;i++) {
+        if (forms[i].elements['guest_selector'].checked) {
+          recipients += forms[i].elements['guest_email'].value+";"
+        }
+       }
+    var expiryModal = document.getElementById('invite-expiry')
+    var modalInput = expiryModal.querySelector('#set-expiry-to')
+    modalInput.value = recipients
+    console.log(recipients)
+    })
+</script>
+
+<!--<div id="form-div">
+<h3>Import Box Office Data</h3>
+<%= form_tag import_new_spreadsheet_path, multipart: true  do %> 
+  <div style="text-align: center;">
+    <br>
+    <%= label_tag(:file, "Accepted types: .xlsx") %><br>
+    <%= file_field_tag(:file, :id => "file-button", required: true) %><br><br>
+    <%= submit_tag("Import Latest Box Office Data", :class => "button") %>
+  </div>
+<% end %>
+</div> -->
+
+<!--<h4 class="display-10" style="text-align: center; color: gray;"> Referral Rewards </h1><br><br>
+<div id="referral">
+  <div style="text-align: center;" id="center-referral-button">
+    <button type="button" id="referral-prepper" class="btn btn-success btn-rounded" onclick="toggle_referral()">Open Referral Reward Template</button>
+  </div>
+  <br><br>
+  <div id="referral-contents-toggle">
+  <h4>Referral Reward Email Template</h4>
+  <div class="referral-template" style="background: white; color: black;"> 
+        <p>Hi Guest,</p>
+        <p id="reward-msg">Please send your friend an invitation to FashionNXT by inserting their email in the box below. You will receive <%= $reward.to_s %> Reward if any of your friends purchase tickets to FashionNXT.</p>
+        <p id="email"><b>Email:  <%= label_tag(:email, "")%>
+        <%= text_field_tag(:email, nil, :required => 'true', placeholder: "email", style:"color: black;")%><br><br></p>
+        <p>Choose the date you are going and want your friends to join:</p>
+        <p id="event-date"><b>Event date:  <%= label_tag(:event_date, "") %>
+        <%= text_field_tag(:event_date, nil, :required => 'true', placeholder: "MM/DD/YYYY", style:"color: black;")%><br><br></p>
+  </div>
+
+    <%= form_tag '/events/create_event', :id => "referral-form", :remote => true do %>
+    <%= label_tag(:reward, "Insert Reward:", :style => "color: black;") %>
+    <%= text_field_tag(:reward, nil, :required => 'true', placeholder: "XYZ Reward", :style => "color: black;")%><br><br>
+    <%= submit_tag "Save Changes", :id => "thisone", :class => "btn btn-success btn-rounded" %>
+    <% end %>
+       
+      <br>
+        <%= button_tag "Preview Changes", :id => "thisone", :type => "button", :class => "btn btn-success btn-rounded", :onclick => "refresh()" %>
+      <br>
+
+
+
+    <br><%= button_to "Back to Dashboard", root_path, :class => "btn btn-success btn-rounded", :type => "button", :method => "get" %>
+
+</div>-->
+
+<%= link_to "Back", '/events',  style:"height:40px;width:80px", class:"btn btn-primary" %><br><br>
